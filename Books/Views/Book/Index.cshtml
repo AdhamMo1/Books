@@ -1,0 +1,97 @@
+﻿@model IEnumerable<Book>
+<div class="d-flex justify-content-between align-items-center">
+<h2 class="text-primary mt-3">Books</h2>
+<a asp-action="Add" asp-controller="Book" class="btn btn-primary">
+    <i class="icofont-plus"></i>
+    Add New
+    </a>
+</div>
+<span id="Message"class="d-none">@TempData["Message"]</span>
+<hr />
+
+<div>
+<table class="table table-bordered table-hover mt-2 @(Model.Any()?" ": "d-none") ">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Descrption</th>
+            <th>Category</th>
+            <th>Author</th>
+            <th>Date</th>
+            <th>Update</th>
+        </tr>
+    </thead>
+    <tbody>
+            @foreach(var item in Model)
+            {
+                <tr>
+               <td>@item.Id</td>
+               <td><a asp-action="Details" asp-route-id="@item.Id" style="text-decoration:none">@item.Title</a></td>
+               <td>@item.Description</td>
+               <td>@item.Category.Name</td>
+               <td>@item.Author</td>
+               <td>@item.AddedOn</td>
+                   <td>
+                       <a class="btn btn-light" asp-action="Edit" asp-route-id="@item.Id"><i class="icofont-edit"></i> Edit</a><hr />
+                       <a class="btn btn-danger js-delete" data-id="@item.Id"><i class="icofont-close-squared-alt"></i> Delete</a>
+                   </td>
+                </tr>
+            }
+    </tbody>
+</table>
+    </div>
+
+    <h6 class="text-danger alert alert-warning @(Model.Any()?" d-none " : "") "><i class="icofont-warning"></i> NO Books Are Found....</h6>
+    <hr />
+@section Scripts 
+{
+    <script>
+        $(document).ready(function () 
+        {
+            toastr.options={
+                "preventDuplicates" : true
+            }
+            var message = $('#Message').text();
+            if(message!==''){
+                toastr.success(message);
+            }
+            
+            $('.js-delete').on('click', function () {
+                var btn = $(this);
+                bootbox.confirm({
+                    message: 'Are you sure that you need to delete this book?',
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-success'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-danger'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            $.ajax({
+                                url: '/Book/delete/' + btn.data('id'),
+                                method: 'DELETE',
+                                success: function () {
+                                    btn.parents('tr').remove();
+                                    toastr.success('Book Deleted..');
+                                },
+                                error: function () {
+                                    toastr.error('Somthing went wrong..');
+                                }
+
+                            });
+                        }
+                    }
+                });
+
+                
+            });
+        });
+    </script>
+}
+
